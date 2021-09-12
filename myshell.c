@@ -12,11 +12,19 @@ void m_start() {
   long pid;
 
   pid = fork();
-  if(pid > 0)
-    printf("myshell: processo %ld iniciado.\n", pid);
-  else if(pid == 0) {
-    execvp(palavras[0], palavras);
-    exit(0);
+  if(pid < 0) {
+    perror ("Erro");
+    exit(-1);
+  }
+ 
+  else { 
+    if(pid > 0)
+      printf("myshell: processo %ld iniciado.\n", pid);
+    else {
+      if(execvp(palavras[0], palavras) == -1)
+        perror("Erro");
+      exit(0);
+    }
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////
@@ -36,11 +44,22 @@ void m_run() {
   long pid;
 
   pid = fork();
-  if(pid == 0) {
-    execvp(palavras[0], palavras);
-    exit(0);
+  if(pid < 0) {
+    perror ("Erro");
+    exit(-1);
   }
-  m_wait(pid);
+ 
+  else { 
+    if(pid > 0) {
+      printf("myshell: processo %ld iniciado.\n", pid);
+      m_wait(pid);
+    }
+    else {
+      if(execvp(palavras[0], palavras) == -1)
+        perror("Erro");
+      exit(0);
+    }
+  }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 int tratamento() {
