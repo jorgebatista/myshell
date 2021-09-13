@@ -23,7 +23,20 @@ void m_start() {
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////
-void m_wait(long pid) {
+void m_wait() {
+  int status;
+  long pid;
+
+  pid = wait(&status);
+  if(pid < 0)
+    printf("myshell: não há processos restantes.\n");
+  else if(WIFEXITED(status))
+    printf("myshell: processo %ld finalizou normalmente com status %d.\n", pid, WEXITSTATUS(status));
+  else if(WIFSIGNALED(status))
+    printf("myshell: processo %ld finalizou de forma anormal com sinal %d: %s.\n", pid, WTERMSIG(status), strsignal(WTERMSIG(status)));
+}
+////////////////////////////////////////////////////////////////////////////////////////
+void m_waitpid(long pid) {
   int status;
 
   pid = waitpid(pid, &status, 0);
@@ -34,6 +47,7 @@ void m_wait(long pid) {
   else if(WIFSIGNALED(status))
     printf("myshell: processo %ld finalizou de forma anormal com sinal %d: %s.\n", pid, WTERMSIG(status), strsignal(WTERMSIG(status)));
 }
+
 ////////////////////////////////////////////////////////////////////////////////////////
 void m_run() {
   long pid;
@@ -43,7 +57,7 @@ void m_run() {
     perror ("Erro");
   }
   else if(pid > 0)
-    m_wait(pid);
+    m_waitpid(pid);
   else {
     execvp(palavras[0], palavras);
     perror("Erro");
@@ -75,7 +89,7 @@ void m_kill() {
   if(tratamento()) {
     pid = atoi(palavras[0]);
     kill(pid, SIGKILL);
-    m_wait(pid);
+    m_waitpid(pid);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +138,7 @@ int main() {
     else if(strcmp(linha, "start") == 0)
       m_start();
     else if(strcmp(linha, "wait") == 0)
-      m_wait(-1);
+      m_wait();
     else if(strcmp(linha, "run") == 0)
       m_run();
     else if(strcmp(linha, "kill") == 0)
