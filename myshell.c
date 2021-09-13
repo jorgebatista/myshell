@@ -7,24 +7,19 @@
 char linha[4096];
 char* palavras[100];
 
-// Iniciar processo
+////////////////////////////////////////////////////////////////////////////////////
 void m_start() {
   long pid;
 
   pid = fork();
-  if(pid < 0) {
+  if(pid < 0)
     perror ("Erro");
-    exit(-1);
-  }
- 
-  else { 
-    if(pid > 0)
-      printf("myshell: processo %ld iniciado.\n", pid);
-    else {
-      if(execvp(palavras[0], palavras) == -1)
-        perror("Erro");
-      exit(0);
-    }
+  else if(pid > 0)
+    printf("myshell: processo %ld iniciado.\n", pid);
+  else {
+    execvp(palavras[0], palavras);
+    perror("Erro");
+    exit(1);
   }
 }
 /////////////////////////////////////////////////////////////////////////////////////
@@ -46,30 +41,25 @@ void m_run() {
   pid = fork();
   if(pid < 0) {
     perror ("Erro");
-    exit(-1);
   }
- 
-  else { 
-    if(pid > 0) {
-      printf("myshell: processo %ld iniciado.\n", pid);
-      m_wait(pid);
-    }
-    else {
-      if(execvp(palavras[0], palavras) == -1)
-        perror("Erro");
-      exit(0);
-    }
+  else if(pid > 0)
+    m_wait(pid);
+  else {
+    execvp(palavras[0], palavras);
+    perror("Erro");
+    exit(1);
   }
 }
 ////////////////////////////////////////////////////////////////////////////////////////
 int tratamento() {
   long pid;
+  char* end = 0;
 
   if(palavras[0] == 0)
     printf("myshell: ERRO --> %s: faltando argumento.\n", linha);
   else {
-    pid = atoi(palavras[0]);
-    if(pid == 0)
+    pid = strtol(palavras[0], &end, 10);
+    if(pid <= 0 || *end != 0)
       printf("myshell: ERRO --> %s: argumento deve ser um inteiro maior que 0.\n", linha);
     else if(kill(pid, 0))
       printf("myshell: ERRO --> %s: processo %ld não encontrado.\n", linha, pid);
