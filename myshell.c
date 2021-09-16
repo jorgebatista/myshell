@@ -3,9 +3,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 char linha[4096];
 char* palavras[100];
+
+int kill(pid_t pid, int sig);
+char *strsignal(int sig);
 
 ////////////////////////////////////////////////////////////////////////////////////
 void m_start() {
